@@ -1,16 +1,15 @@
-export const categorizeBlog = (title: string): string => {
-  const categories: Record<string, string[]> = {
+export function categorizeBlog(title: string): string {
+  const keywords: Record<string, string[]> = {
     Technology: ['tech', 'AI', 'software', 'startup'],
-    Science: ['research', 'science', 'experiment'],
+    Science: ['science', 'research', 'experiment'],
     Finance: ['finance', 'market', 'stocks'],
-    Health: ['health', 'wellness', 'medicine'],
+    Health: ['health', 'medicine', 'wellness']
   };
 
-  for (const [category, keywords] of Object.entries(categories)) {
-    if (keywords.some((kw) => title.toLowerCase().includes(kw.toLowerCase()))) {
-      return category;
+  for (const [cat, words] of Object.entries(keywords)) {
+    if (words.some(w => title.toLowerCase().includes(w))) {
+      return cat;
     }
   }
-
   return 'General';
-};
+}

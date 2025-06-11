@@ -1,20 +1,17 @@
 import { NextResponse } from 'next/server';
 import Parser from 'rss-parser';
 import OpenAI from 'openai';
-import { categorizeBlog } from '../../../utils/categorize';
+import { categorizeBlog } from '@/utils/categorize';
 
-
-const parser: Parser = new Parser();
-console.log('OPENAI_API_KEY:', process.env.OPENAI_API_KEY);
-
+const parser = new Parser();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
-const FEEDS: string[] = [
+const FEEDS = [
   'https://www.theverge.com/rss/index.xml',
-  'https://techcrunch.com/feed/',
+  'https://techcrunch.com/feed/'
 ];
 
-type BlogItem = {
+export type BlogItem = {
   title: string;
   link: string;
   summary: string;
@@ -22,30 +19,29 @@ type BlogItem = {
 };
 
 export async function GET() {
-  console.log('OPENAI_API_KEY:', process.env.OPENAI_API_KEY);
   try {
-    const items: BlogItem[] = [];
-
-    for (const feedUrl of FEEDS) {
-      const feed = await parser.parseURL(feedUrl);
+    const blogs: BlogItem[] = [];
+    for (const url of FEEDS) {
+      const feed = await parser.parseURL(url);
       for (const item of feed.items.slice(0, 3)) {
-        const summary = await summarizeText(item.contentSnippet || item.content || item.title || '');
-        items.push({
+        const summary = await summarize(item.contentSnippet || item.content || item.title || '');
+        blogs.push({
           title: item.title || 'Untitled',
           link: item.link || '#',
           summary,
-          category: categorizeBlog(item.title || ''),
+          category: categorizeBlog(item.title || '')
         });
       }
     }
-
-    return NextResponse.json({ blogs: items });
+    return NextResponse.json({ blogs });
   } catch (err: any) {
+    console.error('Error in fetchBlogs:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
-async function summarizeText(text: string): Promise<string> {
+
+async function summarize(text: string): Promise<string> {
   try {
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
