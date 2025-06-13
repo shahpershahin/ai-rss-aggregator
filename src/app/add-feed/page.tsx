@@ -8,17 +8,26 @@ export default function AddFeedPage() {
   const [message, setMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const res = await fetch('/api/addFeed', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rssUrl }),
-    });
+  e.preventDefault();
 
-    const data = await res.json();
-    setMessage(data.message);
-    setRssUrl('');
-  };
+  const userEmail = localStorage.getItem('userEmail'); // Get email from storage
+
+  if (!userEmail) {
+    setMessage('You must be logged in to add a feed.');
+    return;
+  }
+
+  const res = await fetch('/api/addFeed', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rssUrl, userEmail }), // Send email too
+  });
+
+  const data = await res.json();
+  setMessage(data.message);
+  setRssUrl('');
+};
+
 
   return (
     <main className="max-w-xl mx-auto mt-10 p-4 border rounded">

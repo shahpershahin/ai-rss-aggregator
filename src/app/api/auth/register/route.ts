@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '../../../../lib/mongodb';
-import { hashPassword } from '../../../../lib/auth';
+import { hashPassword } from '../../../../lib/password';
 
 export async function POST(request: Request) {
   const { email, password } = await request.json();

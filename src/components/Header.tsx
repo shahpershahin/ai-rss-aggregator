@@ -21,6 +21,7 @@ export default function Header() {
         <Link href="/categories">Categories</Link>
         <Link href="/about">About</Link>
         <Link href="/add-feed">Add RSS Feed</Link>
+        <Link href="/my-feeds">My Feeds</Link>
         <button className="text-red-500" onClick={handleLogout}>
           Logout
         </button>

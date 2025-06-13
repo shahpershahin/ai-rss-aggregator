@@ -1,11 +1,41 @@
-// lib/auth.ts
-import bcrypt from 'bcryptjs';
+import GoogleProvider from 'next-auth/providers/google';
+import type { AuthOptions } from 'next-auth';
 
-export async function hashPassword(password: string) {
-  const salt = await bcrypt.genSalt(10);
-  return bcrypt.hash(password, salt);
+// ✅ Local module augmentation to extend types
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      email: string;
+    };
+  }
 }
 
-export async function verifyPassword(password: string, hashedPassword: string) {
-  return bcrypt.compare(password, hashedPassword);
+declare module 'next-auth/jwt' {
+  interface JWT {
+    email: string;
+  }
 }
+
+export const authOptions: AuthOptions = {
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+  ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user?.email) {
+        token.email = user.email;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token.email) {
+        session.user.email = token.email;
+      }
+      return session;
+    },
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+};

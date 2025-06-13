@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '../../../../lib/mongodb';
-import { verifyPassword } from '../../../../lib/auth';
+import { verifyPassword } from '../../../../lib/password';
 const jwt = require('jsonwebtoken');
 
 
