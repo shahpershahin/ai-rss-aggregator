@@ -1,69 +1,45 @@
+// app/my-feeds/page.tsx
 'use client';
-
 import { useEffect, useState } from 'react';
 
-type Feed = {
-  _id: string;
-  url: string;
-  title: string;
-};
-
-export default function MyFeedsPage() {
-  const [feeds, setFeeds] = useState<Feed[]>([]);
-  const [selectedFeed, setSelectedFeed] = useState<Feed | null>(null);
-  const [blogs, setBlogs] = useState<any[]>([]);
+export default function MyFeeds() {
+  const [feeds, setFeeds] = useState([]);
+  const [articles, setArticles] = useState([]);
 
   useEffect(() => {
-    const fetchFeeds = async () => {
-      const res = await fetch('/api/myFeeds');
-      if (res.ok) {
-        const data = await res.json();
-        setFeeds(data);
-      }
-    };
-
-    fetchFeeds();
+    fetch('/api/getFeeds')
+      .then(res => res.json())
+      .then(data => setFeeds(data.feeds));
   }, []);
 
-  const handleCardClick = async (feed: Feed) => {
-    setSelectedFeed(feed);
-    const res = await fetch(`/api/fetchFeedContent?url=${encodeURIComponent(feed.url)}`);
-    if (res.ok) {
-      const data = await res.json();
-      setBlogs(data.items);
-    }
+  const handleFeedClick = async (url: string) => {
+    const res = await fetch(`/api/fetchArticles?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    setArticles(data.articles);
   };
 
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Your RSS Feeds</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {feeds.map((feed) => (
-          <div
-            key={feed._id}
-            onClick={() => handleCardClick(feed)}
-            className="cursor-pointer border p-4 rounded shadow hover:shadow-lg transition"
-          >
-            <h2 className="text-lg font-semibold">{feed.title || 'Unnamed Feed'}</h2>
-            <p className="text-sm text-gray-500 truncate">{feed.url}</p>
+    <div className="p-4">
+      <h1 className="text-2xl mb-4">Your RSS Feeds</h1>
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        {feeds.map((feed: any) => (
+          <div key={feed._id} className="p-4 border rounded cursor-pointer hover:bg-gray-100" onClick={() => handleFeedClick(feed.url)}>
+            <h2 className="font-semibold">{feed.url}</h2>
           </div>
         ))}
       </div>
 
-      {selectedFeed && (
-        <>
-          <h2 className="text-xl font-bold mb-2">{selectedFeed.title}</h2>
-          <div className="space-y-4">
-            {blogs.map((item, i) => (
-              <div key={i} className="border p-4 rounded shadow">
-                <h3 className="text-lg font-semibold">{item.title}</h3>
-                <p className="text-sm text-gray-600">{item.contentSnippet || item.content}</p>
-                <a href={item.link} target="_blank" className="text-blue-500 underline">Read more</a>
-              </div>
-            ))}
+      <div>
+        <h2 className="text-xl mb-2">Articles</h2>
+        {articles.map((article: any, i) => (
+          <div key={i} className="mb-4 border-b pb-2">
+            <a href={article.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 font-semibold">
+              {article.title}
+            </a>
+            <p className="text-sm text-gray-600">{article.pubDate}</p>
           </div>
-        </>
-      )}
-    </main>
+        ))}
+      </div>
+    </div>
   );
 }
